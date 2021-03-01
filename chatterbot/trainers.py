@@ -56,12 +56,11 @@ class Trainer(object):
             super().__init__(message or default)
 
     def _generate_export_data(self):
-        result = []
-        for statement in self.chatbot.storage.filter():
-            if statement.in_response_to:
-                result.append([statement.in_response_to, statement.text])
-
-        return result
+        return [
+            [statement.in_response_to, statement.text]
+            for statement in self.chatbot.storage.filter()
+            if statement.in_response_to
+        ]
 
     def export_for_training(self, file_path='./export.json'):
         """
