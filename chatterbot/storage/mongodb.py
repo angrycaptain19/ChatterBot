@@ -90,7 +90,7 @@ class MongoDatabaseAdapter(StorageAdapter):
         if exclude_text:
             if 'text' not in kwargs:
                 kwargs['text'] = {}
-            elif 'text' in kwargs and isinstance(kwargs['text'], str):
+            elif isinstance(kwargs['text'], str):
                 text = kwargs.pop('text')
                 kwargs['text'] = {
                     '$eq': text
@@ -100,20 +100,21 @@ class MongoDatabaseAdapter(StorageAdapter):
         if exclude_text_words:
             if 'text' not in kwargs:
                 kwargs['text'] = {}
-            elif 'text' in kwargs and isinstance(kwargs['text'], str):
+            elif isinstance(kwargs['text'], str):
                 text = kwargs.pop('text')
                 kwargs['text'] = {
                     '$eq': text
                 }
-            exclude_word_regex = '|'.join([
+            exclude_word_regex = '|'.join(
                 '.*{}.*'.format(word) for word in exclude_text_words
-            ])
+            )
+
             kwargs['text']['$not'] = re.compile(exclude_word_regex)
 
         if persona_not_startswith:
             if 'persona' not in kwargs:
                 kwargs['persona'] = {}
-            elif 'persona' in kwargs and isinstance(kwargs['persona'], str):
+            elif isinstance(kwargs['persona'], str):
                 persona = kwargs.pop('persona')
                 kwargs['persona'] = {
                     '$eq': persona
@@ -121,9 +122,11 @@ class MongoDatabaseAdapter(StorageAdapter):
             kwargs['persona']['$not'] = re.compile('^bot:*')
 
         if search_text_contains:
-            or_regex = '|'.join([
-                '{}'.format(re.escape(word)) for word in search_text_contains.split(' ')
-            ])
+            or_regex = '|'.join(
+                '{}'.format(re.escape(word))
+                for word in search_text_contains.split(' ')
+            )
+
             kwargs['search_text'] = re.compile(or_regex)
 
         mongo_ordering = []
@@ -161,9 +164,8 @@ class MongoDatabaseAdapter(StorageAdapter):
         if 'search_text' not in kwargs:
             kwargs['search_text'] = self.tagger.get_text_index_string(kwargs['text'])
 
-        if 'search_in_response_to' not in kwargs:
-            if kwargs.get('in_response_to'):
-                kwargs['search_in_response_to'] = self.tagger.get_text_index_string(kwargs['in_response_to'])
+        if 'search_in_response_to' not in kwargs and kwargs.get('in_response_to'):
+            kwargs['search_in_response_to'] = self.tagger.get_text_index_string(kwargs['in_response_to'])
 
         inserted = self.statements.insert_one(kwargs)
 
